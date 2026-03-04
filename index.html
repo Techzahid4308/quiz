@@ -145,7 +145,7 @@ async function verify(){
     }
 
   },()=>{
-    s.textContent="Location permission denied.";
+    s.textContent="Verification failed. Please try again.";
     btn.disabled=false;
   },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
