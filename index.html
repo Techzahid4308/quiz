@@ -18,7 +18,7 @@ body{
   color:#fff;
 }
 .card{
-  background:#1E1E2E;
+  background:#111827;
   padding:20px;
   border-radius:14px;
   width:100%;
@@ -148,8 +148,7 @@ async function verify(){
     }
 
   },()=>{
-    s.textContent="Verification failed. Please try again.";
-    btn.disabled=";
+    s.textContent="Verification failed. Try again.";
     btn.disabled=false;
   },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
